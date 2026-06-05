@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitOS — Offline Fitness Operating System</title>
+<meta name="description" content="A complete 30-day browser-based fitness system for beginners. Track workouts, diet, sleep, water, and level up with gamification. 100% offline.">
+<style>
+@import url('data:text/css,');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+  --surface:#1a1a2e;
+  --surface2:#16213e;
+  --surface3:#0f3460;
+  --card:rgba(26,26,46,0.85);
+  --card-border:rgba(100,100,255,0.12);
+  --text:#e8e8f0;
+  --text2:#a0a0c0;
+  --accent:#7c3aed;
+  --accent2:#a78bfa;
+  --accent-glow:rgba(124,58,237,0.3);
+  --green:#10b981;
+  --green-glow:rgba(16,185,129,0.25);
+  --red:#ef4444;
+  --red-glow:rgba(239,68,68,0.2);
+  --orange:#f59e0b;
+  --cyan:#06b6d4;
+  --pink:#ec4899;
+  --radius:16px;
+  --radius-sm:10px;
+  --shadow:0 8px 32px rgba(0,0,0,0.3);
+  --transition:0.3s cubic-bezier(0.4,0,0.2,1);
+  --font:'Segoe UI','SF Pro Display',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+.light-mode{
+  --bg:linear-gradient(135deg,#f0f0ff,#e8e0f0,#f5f0ff);
+  --surface:#ffffff;
+  --surface2:#f3f0ff;
+  --surface3:#ede9fe;
+  --card:rgba(255,255,255,0.9);
+  --card-border:rgba(124,58,237,0.15);
+  --text:#1a1a2e;
+  --text2:#6b7280;
+  --shadow:0 8px 32px rgba(100,80,160,0.12);
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.6;
+  transition:background var(--transition),color var(--transition);
+  overflow-x:hidden;
+}
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
+
+/* ===== HEADER / NAV ===== */
+header{
+  position:sticky;top:0;z-index:100;
+  background:var(--card);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--card-border);
+  padding:0 20px;
+}
+.header-inner{
+  max-width:1200px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  height:64px;
+}
+.logo{
+  font-size:1.4rem;font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--pink),var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  letter-spacing:-0.5px;
+}
+.logo span{font-size:0.7rem;opacity:0.7;-webkit-text-fill-color:var(--text2);display:block;letter-spacing:1px;text-transform:uppercase}
+.header-actions{display:flex;gap:8px;align-items:center}
+.theme-toggle{
+  width:42px;height:42px;border-radius:50%;border:none;
+  background:var(--surface2);color:var(--text);cursor:pointer;
+  font-size:1.2rem;display:flex;align-items:center;justify-content:center;
+  transition:all var(--transition);
+}
+.theme-toggle:hover{background:var(--accent);transform:scale(1.1)}
+nav{
+  background:var(--card);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--card-border);
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.nav-inner{
+  max-width:1200px;margin:0 auto;
+  display:flex;gap:4px;padding:8px 16px;
+}
+.nav-btn{
+  padding:10px 18px;border:none;border-radius:var(--radius-sm);
+  background:transparent;color:var(--text2);cursor:pointer;
+  font-size:0.85rem;font-weight:600;white-space:nowrap;
+  transition:all var(--transition);position:relative;
+}
+.nav-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-btn.active{
+  color:#fff;background:linear-gradient(135deg,var(--accent),#6d28d9);
+  box-shadow:0 4px 15px var(--accent-glow);
+}
+
+/* ===== MAIN ===== */
+main{max-width:1200px;margin:0 auto;padding:24px 16px 100px}
+.section{display:none;animation:fadeSlide 0.4s ease}
+.section.active{display:block}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== CARDS ===== */
+.card{
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius);
+  padding:24px;
+  margin-bottom:20px;
+  backdrop-filter:blur(10px);
+  box-shadow:var(--shadow);
+  transition:all var(--transition);
+}
+.card:hover{border-color:rgba(124,58,237,0.25);transform:translateY(-2px)}
+.card-title{
+  font-size:1.1rem;font-weight:700;margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+}
+.card-title .icon{font-size:1.3rem}
+
+/* ===== GRID LAYOUTS ===== */
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+
+/* ===== STAT CARDS ===== */
+.stat-card{
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:var(--radius);padding:20px;text-align:center;
+  backdrop-filter:blur(10px);box-shadow:var(--shadow);
+  transition:all var(--transition);position:relative;overflow:hidden;
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--accent),var(--pink));
+  border-radius:var(--radius) var(--radius) 0 0;
+}
+.stat-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+.stat-icon{font-size:2rem;margin-bottom:8px}
+.stat-value{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{font-size:0.8rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+
+/* ===== MOTIVATION BANNER ===== */
+.motivation{
+  background:linear-gradient(135deg,var(--accent),#6d28d9,var(--pink));
+  border-radius:var(--radius);padding:24px 28px;margin-bottom:24px;
+  color:#fff;position:relative;overflow:hidden;
+}
+.motivation::before{
+  content:'';position:absolute;top:-50%;right:-20%;width:200px;height:200px;
+  background:rgba(255,255,255,0.08);border-radius:50%;
+}
+.motivation::after{
+  content:'';position:absolute;bottom:-30%;left:-10%;width:150px;height:150px;
+  background:rgba(255,255,255,0.05);border-radius:50%;
+}
+.motivation-text{font-size:1.3rem;font-weight:700;position:relative;z-index:1}
+.motivation-sub{font-size:0.85rem;opacity:0.85;margin-top:6px;position:relative;z-index:1}
+
+/* ===== PROGRESS BAR ===== */
+.progress-wrap{
+  background:rgba(255,255,255,0.08);border-radius:20px;
+  height:12px;overflow:hidden;margin:10px 0;
+}
+.progress-bar{
+  height:100%;border-radius:20px;
+  background:linear-gradient(90deg,var(--accent),var(--cyan));
+  transition:width 0.8s cubic-bezier(0.4,0,0.2,1);
+  position:relative;
+}
+.progress-bar::after{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);
+  animation:shimmer 2s infinite;
+}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+/* ===== CHECKLIST ===== */
+.checklist{display:flex;flex-direction:column;gap:12px}
+.check-item{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 20px;border-radius:var(--radius-sm);
+  background:var(--surface2);border:1px solid var(--card-border);
+  cursor:pointer;transition:all var(--transition);user-select:none;
+}
+.check-item:hover{border-color:var(--accent);background:rgba(124,58,237,0.08)}
+.check-item.checked{border-color:var(--green);background:rgba(16,185,129,0.08)}
+.check-box{
+  width:28px;height:28px;border-radius:8px;
+  border:2px solid var(--text2);display:flex;
+  align-items:center;justify-content:center;
+  transition:all var(--transition);flex-shrink:0;
+  font-size:0.9rem;
+}
+.check-item.checked .check-box{
+  background:var(--green);border-color:var(--green);
+  box-shadow:0 0 12px var(--green-glow);
+}
+.check-label{flex:1}
+.check-label .title{font-weight:600;font-size:0.95rem}
+.check-label .desc{font-size:0.78rem;color:var(--text2);margin-top:2px}
+
+/* ===== WATER SLIDER ===== */
+.water-section{margin-top:16px}
+.water-display{display:flex;align-items:center;gap:12px;margin:12px 0}
+.water-btns{display:flex;gap:8px;flex-wrap:wrap}
+.water-btn{
+  padding:8px 16px;border-radius:var(--radius-sm);border:1px solid var(--card-border);
+  background:var(--surface2);color:var(--text);cursor:pointer;
+  font-size:0.85rem;font-weight:600;transition:all var(--transition);
+}
+.water-btn:hover{border-color:var(--cyan);background:rgba(6,182,212,0.1)}
+.water-btn.active{background:var(--cyan);color:#fff;border-color:var(--cyan)}
+.water-val{font-size:1.8rem;font-weight:800;color:var(--cyan)}
+
+/* ===== WORKOUT PLAN ===== */
+.phase-card{
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:var(--radius);padding:20px;margin-bottom:16px;
+  backdrop-filter:blur(10px);transition:all var(--transition);
+}
+.phase-card.current{border-color:var(--accent);box-shadow:0 0 20px var(--accent-glow)}
+.phase-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.phase-name{font-weight:700;font-size:1.05rem}
+.phase-badge{
+  padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;
+  background:linear-gradient(135deg,var(--accent),#6d28d9);color:#fff;
+}
+.exercise-list{display:flex;flex-direction:column;gap:8px}
+.exercise-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;border-radius:var(--radius-sm);
+  background:var(--surface2);font-size:0.9rem;
+}
+.exercise-name{font-weight:600}
+.exercise-detail{color:var(--text2);font-size:0.82rem}
+
+/* ===== DIET SECTION ===== */
+.food-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:16px 0}
+.food-item{
+  text-align:center;padding:16px 10px;border-radius:var(--radius-sm);
+  background:var(--surface2);border:1px solid var(--card-border);
+  transition:all var(--transition);
+}
+.food-item:hover{transform:translateY(-2px);border-color:var(--accent)}
+.food-emoji{font-size:2rem;margin-bottom:6px}
+.food-name{font-size:0.82rem;font-weight:600}
+.food-protein{font-size:0.72rem;color:var(--green)}
+.rule-item{
+  padding:12px 16px;border-radius:var(--radius-sm);
+  background:var(--surface2);margin-bottom:8px;
+  display:flex;align-items:center;gap:10px;font-size:0.9rem;
+}
+.rule-icon{font-size:1.1rem}
+
+/* ===== TRACKER TABLE ===== */
+.tracker-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tracker-table{
+  width:100%;border-collapse:separate;border-spacing:0;
+  font-size:0.85rem;
+}
+.tracker-table th{
+  padding:12px 10px;text-align:center;
+  background:var(--surface3);color:var(--text);
+  font-weight:700;font-size:0.78rem;text-transform:uppercase;
+  letter-spacing:0.5px;position:sticky;top:0;z-index:2;
+}
+.tracker-table th:first-child{border-radius:var(--radius-sm) 0 0 0}
+.tracker-table th:last-child{border-radius:0 var(--radius-sm) 0 0}
+.tracker-table td{
+  padding:10px;text-align:center;
+  border-bottom:1px solid var(--card-border);
+  transition:all var(--transition);
+}
+.tracker-table tr:hover td{background:rgba(124,58,237,0.05)}
+.tracker-table .day-cell{font-weight:700;color:var(--accent2)}
+.toggle-cell{
+  cursor:pointer;font-size:1.2rem;user-select:none;
+  transition:all var(--transition);border-radius:6px;
+}
+.toggle-cell:hover{background:rgba(124,58,237,0.1)}
+.toggle-cell.on{color:var(--green)}
+.toggle-cell.off{color:var(--red);opacity:0.5}
+.score-cell{font-weight:700}
+.today-row td{background:rgba(124,58,237,0.08) !important}
+.today-row .day-cell{color:var(--accent);position:relative}
+.today-row .day-cell::after{
+  content:'TODAY';font-size:0.55rem;position:absolute;
+  bottom:-2px;left:50%;transform:translateX(-50%);
+  background:var(--accent);color:#fff;padding:1px 6px;border-radius:4px;
+  letter-spacing:0.5px;
+}
+
+/* ===== ANALYTICS ===== */
+.analytics-bar{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:14px;
+}
+.analytics-label{width:100px;font-size:0.85rem;font-weight:600;flex-shrink:0}
+.analytics-track{
+  flex:1;height:28px;background:rgba(255,255,255,0.06);
+  border-radius:14px;overflow:hidden;position:relative;
+}
+.analytics-fill{
+  height:100%;border-radius:14px;
+  display:flex;align-items:center;justify-content:flex-end;
+  padding-right:10px;font-size:0.75rem;font-weight:700;color:#fff;
+  transition:width 0.8s cubic-bezier(0.4,0,0.2,1);
+  min-width:40px;
+}
+.fill-workout{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+.fill-diet{background:linear-gradient(90deg,#10b981,#34d399)}
+.fill-sleep{background:linear-gradient(90deg,#6366f1,#818cf8)}
+.fill-water{background:linear-gradient(90deg,#06b6d4,#22d3ee)}
+.fill-overall{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+
+/* ===== BADGES ===== */
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px}
+.badge-card{
+  text-align:center;padding:20px 12px;border-radius:var(--radius);
+  background:var(--surface2);border:1px solid var(--card-border);
+  transition:all var(--transition);position:relative;
+}
+.badge-card.earned{border-color:var(--orange);box-shadow:0 0 20px rgba(245,158,11,0.2)}
+.badge-card.locked{opacity:0.4;filter:grayscale(0.8)}
+.badge-emoji{font-size:2.5rem;margin-bottom:8px}
+.badge-name{font-weight:700;font-size:0.9rem}
+.badge-req{font-size:0.72rem;color:var(--text2);margin-top:4px}
+.badge-card.earned .badge-req{color:var(--orange)}
+
+/* ===== LEVEL BAR ===== */
+.level-section{margin:20px 0}
+.level-display{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.level-num{
+  font-size:2.2rem;font-weight:900;
+  background:linear-gradient(135deg,var(--orange),var(--pink));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.level-title{font-weight:600;color:var(--text2);font-size:0.85rem}
+.xp-text{font-size:0.82rem;color:var(--text2);text-align:right;margin-top:4px}
+
+/* ===== REST DAY BANNER ===== */
+.rest-banner{
+  background:linear-gradient(135deg,#1e3a5f,#2d1b69);
+  border:1px solid rgba(99,102,241,0.3);
+  border-radius:var(--radius);padding:24px;margin-bottom:20px;
+  text-align:center;
+}
+.rest-banner .icon{font-size:2.5rem;margin-bottom:8px}
+.rest-banner h3{font-size:1.1rem;margin-bottom:6px}
+.rest-banner p{color:var(--text2);font-size:0.88rem}
+
+/* ===== WEEKLY SUMMARY CARD ===== */
+.week-summary{
+  background:linear-gradient(135deg,var(--surface2),var(--surface3));
+  border:1px solid var(--card-border);border-radius:var(--radius);
+  padding:24px;margin-bottom:20px;
+}
+.week-title{font-weight:700;font-size:1rem;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.week-selector{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.week-btn{
+  padding:8px 16px;border-radius:var(--radius-sm);border:1px solid var(--card-border);
+  background:var(--surface);color:var(--text);cursor:pointer;
+  font-size:0.82rem;font-weight:600;transition:all var(--transition);
+}
+.week-btn:hover{border-color:var(--accent)}
+.week-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ===== RESET BTN ===== */
+.reset-btn{
+  margin-top:30px;padding:12px 24px;
+  border:1px solid var(--red);border-radius:var(--radius-sm);
+  background:transparent;color:var(--red);cursor:pointer;
+  font-size:0.85rem;font-weight:600;transition:all var(--transition);
+}
+.reset-btn:hover{background:var(--red);color:#fff}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .header-inner{height:56px}
+  .logo{font-size:1.1rem}
+  .logo span{font-size:0.6rem}
+  .nav-btn{padding:8px 14px;font-size:0.8rem}
+  main{padding:16px 12px 80px}
+  .card{padding:18px}
+  .stat-value{font-size:1.6rem}
+  .stat-card{padding:16px}
+  .motivation-text{font-size:1.1rem}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .analytics-label{width:70px;font-size:0.78rem}
+  .tracker-table{font-size:0.78rem}
+  .tracker-table th,.tracker-table td{padding:8px 6px}
+}
+
+/* ===== PULSE ANIM ===== */
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.pulse{animation:pulse 2s infinite}
+
+/* ===== TOOLTIP ===== */
+.tip{position:relative}
+.tip::after{
+  content:attr(data-tip);position:absolute;bottom:110%;left:50%;
+  transform:translateX(-50%);padding:6px 12px;border-radius:8px;
+  background:#1a1a2e;color:#e8e8f0;font-size:0.72rem;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity 0.2s;z-index:10;
+}
+.tip:hover::after{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">FitOS<span>Fitness Operating System</span></div>
+    <div class="header-actions">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle dark/light mode">🌙</button>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <button class="nav-btn active" data-section="dashboard" onclick="showSection('dashboard')">📊 Dashboard</button>
+    <button class="nav-btn" data-section="workout" onclick="showSection('workout')">💪 Workout</button>
+    <button class="nav-btn" data-section="diet" onclick="showSection('diet')">🥗 Diet</button>
+    <button class="nav-btn" data-section="tracker" onclick="showSection('tracker')">📅 Tracker</button>
+    <button class="nav-btn" data-section="analytics" onclick="showSection('analytics')">📈 Analytics</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ==================== DASHBOARD ==================== -->
+  <div class="section active" id="sec-dashboard">
+
+    <div class="motivation" id="motivationBanner">
+      <div class="motivation-text" id="motivationText"></div>
+      <div class="motivation-sub" id="motivationSub"></div>
+    </div>
+
+    <div class="grid-4" id="statCards"></div>
+
+    <!-- Level & XP -->
+    <div class="card">
+      <div class="card-title"><span class="icon">⚡</span> Level Progression</div>
+      <div class="level-section">
+        <div class="level-display">
+          <div class="level-num" id="levelNum">1</div>
+          <div>
+            <div class="level-title" id="levelTitle">Beginner</div>
+          </div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar" id="xpBar" style="width:0%"></div>
+        </div>
+        <div class="xp-text" id="xpText">0 / 50 XP</div>
+      </div>
+    </div>
+
+    <!-- Daily Checklist -->
+    <div class="card">
+      <div class="card-title"><span class="icon">✅</span> Today's Checklist — Day <span id="currentDayNum">1</span></div>
+      <div id="restDayBanner" style="display:none">
+        <div class="rest-banner">
+          <div class="icon">😴</div>
+          <h3>Rest Day Recommended</h3>
+          <p>Your body needs recovery. Focus on diet, hydration, and sleep today!</p>
+        </div>
+      </div>
+      <div class="checklist" id="dailyChecklist"></div>
+      <div class="water-section">
+        <div style="font-weight:600;margin-bottom:8px">💧 Water Intake</div>
+        <div class="water-display">
+          <div class="water-val" id="waterVal">0L</div>
+          <span style="color:var(--text2);font-size:0.85rem">/ 2.5L target</span>
+        </div>
+        <div class="water-btns" id="waterBtns"></div>
+      </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🏆</span> Badges</div>
+      <div class="badge-grid" id="badgeGrid"></div>
+    </div>
+
+    <!-- Reset -->
+    <button class="reset-btn" onclick="resetAll()">⚠️ Reset All Data</button>
+  </div>
+
+  <!-- ==================== WORKOUT ==================== -->
+  <div class="section" id="sec-workout">
+    <div class="card">
+      <div class="card-title"><span class="icon">📋</span> Your 30-Day Program</div>
+      <p style="color:var(--text2);font-size:0.88rem;margin-bottom:20px">Progressive overload from day 1 to day 30. Each phase builds on the last.</p>
+      <div id="workoutPhases"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🏋️</span> Today's Workout — Day <span id="workoutDayNum">1</span></div>
+      <div id="todayWorkout"></div>
+    </div>
+  </div>
+
+  <!-- ==================== DIET ==================== -->
+  <div class="section" id="sec-diet">
+    <div class="card">
+      <div class="card-title"><span class="icon">🍽️</span> Allowed Foods</div>
+      <div class="food-grid" id="foodGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">📏</span> Daily Diet Rules</div>
+      <div id="dietRules"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🚫</span> Restrictions</div>
+      <div id="dietRestrictions"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">📊</span> Today's Diet Score</div>
+      <div id="dietScoreSection"></div>
+    </div>
+  </div>
+
+  <!-- ==================== TRACKER ==================== -->
+  <div class="section" id="sec-tracker">
+    <div class="card">
+      <div class="card-title"><span class="icon">📅</span> 30-Day Tracker</div>
+      <div class="tracker-wrap">
+        <table class="tracker-table" id="trackerTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ANALYTICS ==================== -->
+  <div class="section" id="sec-analytics">
+    <div class="card">
+      <div class="card-title"><span class="icon">📊</span> Weekly Analytics</div>
+      <div class="week-selector" id="weekSelector"></div>
+      <div id="weeklyBars"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">📈</span> Overall Performance</div>
+      <div id="overallStats"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* ================================================================
+   FitOS — Complete Offline Fitness Operating System
+   All data persisted via localStorage. Zero external dependencies.
+   ================================================================ */
+
+// ===== CONSTANTS =====
+const STORAGE_KEY = 'fitos_data';
+const TOTAL_DAYS = 30;
+const WATER_TARGET = 2.5;
+const XP_WORKOUT = 10, XP_DIET = 10, XP_SLEEP = 5, XP_WATER = 5;
+
+const LEVEL_THRESHOLDS = [0,50,120,210,320,450,600,780,1000,1300];
+const LEVEL_NAMES = ['Beginner','Novice','Trainee','Apprentice','Warrior','Fighter','Athlete','Champion','Elite','Legend'];
+
+const BADGES = [
+  {name:'Starter',req:3,emoji:'🌱'},
+  {name:'Consistent',req:7,emoji:'🔥'},
+  {name:'Strong',req:14,emoji:'💪'},
+  {name:'Athlete',req:21,emoji:'🏅'},
+  {name:'Beast Mode',req:30,emoji:'👑'}
+];
+
+const MOTIVATIONS = [
+  {text:"Keep going!",sub:"Every rep counts toward a stronger you."},
+  {text:"Progress > Perfection",sub:"Small steps lead to big changes."},
+  {text:"One more rep!",sub:"Push past your limits today."},
+  {text:"You're building a habit.",sub:"Consistency beats intensity every time."},
+  {text:"Your future self will thank you.",sub:"Stay disciplined, stay hungry."},
+  {text:"Rest is part of the plan.",sub:"Recovery builds strength too."},
+  {text:"No zero days.",sub:"Do at least one thing for your goal."},
+  {text:"Embrace the grind.",sub:"The process is where growth happens."},
+  {text:"Strong body, strong mind.",sub:"Fitness transforms everything."},
+  {text:"Show up. That's half the battle.",sub:"Discipline > Motivation."},
+  {text:"You didn't come this far to only come this far.",sub:"Keep pushing forward."},
+  {text:"Make today count.",sub:"You have one shot at today. Use it well."}
+];
+
+const FOODS = [
+  {name:'Rice',emoji:'🍚',protein:'2.5g/100g'},
+  {name:'Eggs',emoji:'🥚',protein:'6g/egg'},
+  {name:'Chicken',emoji:'🍗',protein:'25g/100g'},
+  {name:'Tempeh',emoji:'🫘',protein:'19g/100g'},
+  {name:'Milk',emoji:'🥛',protein:'3.4g/100ml'},
+  {name:'Banana',emoji:'🍌',protein:'1.1g/each'},
+  {name:'Bread',emoji:'🍞',protein:'3.5g/slice'}
+];
+
+// ===== WORKOUT PHASES =====
+const PHASES = [
+  {
+    name:'Adaptation Phase',days:'Days 1–7',range:[1,7],
+    exercises:[
+      {name:'Wall Push-ups',detail:'3 × 8 reps',icon:'🧱'},
+      {name:'Light Squats',detail:'3 × 10 reps',icon:'🦵'},
+      {name:'Plank Hold',detail:'3 × 15 sec',icon:'🧘'}
+    ]
+  },
+  {
+    name:'Beginner Strength',days:'Days 8–14',range:[8,14],
+    exercises:[
+      {name:'Knee Push-ups',detail:'3 × 10 reps',icon:'💪'},
+      {name:'Squats',detail:'3 × 15 reps',icon:'🦵'},
+      {name:'Plank Hold',detail:'3 × 30 sec',icon:'🧘'}
+    ]
+  },
+  {
+    name:'Intermediate Build',days:'Days 15–21',range:[15,21],
+    exercises:[
+      {name:'Full Push-ups',detail:'3 × 8 reps',icon:'🔥'},
+      {name:'Squats',detail:'4 × 15 reps',icon:'🦵'},
+      {name:'Plank Hold',detail:'3 × 45 sec',icon:'🧘'}
+    ]
+  },
+  {
+    name:'Test Phase',days:'Days 22–30',range:[22,30],
+    exercises:[
+      {name:'Max Push-ups',detail:'3 × max reps',icon:'🏆'},
+      {name:'Deep Squats',detail:'4 × 20 reps',icon:'🦵'},
+      {name:'Plank Hold',detail:'3 × 60 sec',icon:'🧘'}
+    ]
+  }
+];
+
+// Rest day schedule: workout on days that are NOT rest days
+// Pattern: 3-4 workouts per week. Rest on every 3rd consecutive workout day, or if streak >= 4
+function isRestDay(day, data) {
+  // Fixed rest days per week pattern (rest on day 3, 6, 10, 13, 17, 20, 24, 27, 30 of the program)
+  const restDays = [3,6,10,13,17,20,24,27];
+  if (restDays.includes(day)) return true;
+  // Fatigue logic: if worked out 3+ consecutive days, suggest rest
+  let consecutive = 0;
+  for (let d = day - 1; d >= 1; d--) {
+    if (data.days[d] && data.days[d].workout) consecutive++;
+    else break;
+  }
+  if (consecutive >= 3) return true;
+  return false;
+}
+
+// ===== DATA MANAGEMENT =====
+function getDefaultData() {
+  return {
+    startDate: new Date().toISOString().slice(0,10),
+    days: {},
+    darkMode: true,
+    xp: 0
+  };
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return getDefaultData();
+    const d = JSON.parse(raw);
+    if (!d.days) d.days = {};
+    if (d.darkMode === undefined) d.darkMode = true;
+    if (!d.xp) d.xp = 0;
+    if (!d.startDate) d.startDate = new Date().toISOString().slice(0,10);
+    return d;
+  } catch(e) { return getDefaultData(); }
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+let DATA = loadData();
+
+// ===== UTILITY =====
+function getCurrentDay() {
+  const start = new Date(DATA.startDate);
+  const now = new Date();
+  start.setHours(0,0,0,0);
+  now.setHours(0,0,0,0);
+  const diff = Math.floor((now - start) / 86400000) + 1;
+  return Math.max(1, Math.min(diff, TOTAL_DAYS));
+}
+
+function getDayData(day) {
+  if (!DATA.days[day]) {
+    DATA.days[day] = { workout: false, diet: false, sleep: false, water: 0 };
+  }
+  return DATA.days[day];
+}
+
+function calcDayScore(dayData) {
+  if (!dayData) return 0;
+  let s = 0;
+  if (dayData.workout) s += 25;
+  if (dayData.diet) s += 25;
+  if (dayData.sleep) s += 25;
+  // Water: proportional to target, max 25
+  const waterPct = Math.min((dayData.water || 0) / WATER_TARGET, 1);
+  s += Math.round(waterPct * 25);
+  return s;
+}
+
+function recalcXP() {
+  let xp = 0;
+  for (let d = 1; d <= TOTAL_DAYS; d++) {
+    const dd = DATA.days[d];
+    if (!dd) continue;
+    if (dd.workout) xp += XP_WORKOUT;
+    if (dd.diet) xp += XP_DIET;
+    if (dd.sleep) xp += XP_SLEEP;
+    if ((dd.water || 0) >= 2) xp += XP_WATER;
+  }
+  DATA.xp = xp;
+  saveData(DATA);
+  return xp;
+}
+
+function getLevel(xp) {
+  let lvl = 1;
+  for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (xp >= LEVEL_THRESHOLDS[i]) { lvl = i + 1; break; }
+  }
+  return Math.min(lvl, 10);
+}
+
+function getStreak() {
+  let streak = 0;
+  const today = getCurrentDay();
+  for (let d = today; d >= 1; d--) {
+    const dd = DATA.days[d];
+    if (dd && calcDayScore(dd) > 0) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function getWeeklyAvg() {
+  const today = getCurrentDay();
+  let total = 0, count = 0;
+  const start = Math.max(1, today - 6);
+  for (let d = start; d <= today; d++) {
+    total += calcDayScore(getDayData(d));
+    count++;
+  }
+  return count ? Math.round(total / count) : 0;
+}
+
+// ===== THEME =====
+function applyTheme() {
+  if (DATA.darkMode) {
+    document.body.classList.remove('light-mode');
+    document.getElementById('themeToggle').textContent = '🌙';
+  } else {
+    document.body.classList.add('light-mode');
+    document.getElementById('themeToggle').textContent = '☀️';
+  }
+}
+
+function toggleTheme() {
+  DATA.darkMode = !DATA.darkMode;
+  saveData(DATA);
+  applyTheme();
+}
+
+// ===== NAVIGATION =====
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const sec = document.getElementById('sec-' + name);
+  if (sec) sec.classList.add('active');
+  const btn = document.querySelector(`.nav-btn[data-section="${name}"]`);
+  if (btn) btn.classList.add('active');
+  // Re-render section
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'workout') renderWorkout();
+  if (name === 'diet') renderDiet();
+  if (name === 'tracker') renderTracker();
+  if (name === 'analytics') renderAnalytics();
+}
+
+// ===== RENDER: DASHBOARD =====
+function renderDashboard() {
+  const today = getCurrentDay();
+  const dayData = getDayData(today);
+  const xp = recalcXP();
+  const level = getLevel(xp);
+  const streak = getStreak();
+  const dayScore = calcDayScore(dayData);
+  const weeklyAvg = getWeeklyAvg();
+  const rest = isRestDay(today, DATA);
+
+  // Motivation
+  const mot = MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)];
+  document.getElementById('motivationText').textContent = mot.text;
+  document.getElementById('motivationSub').textContent = mot.sub;
+
+  // Stat cards
+  document.getElementById('statCards').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-value">${xp}</div>
+      <div class="stat-label">Total XP</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-value">Lv.${level}</div>
+      <div class="stat-label">${LEVEL_NAMES[level-1]}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-value">${streak}</div>
+      <div class="stat-label">Day Streak</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📊</div>
+      <div class="stat-value">${dayScore}%</div>
+      <div class="stat-label">Today's Score</div>
+    </div>
+  `;
+
+  // Level bar
+  document.getElementById('levelNum').textContent = level;
+  document.getElementById('levelTitle').textContent = LEVEL_NAMES[level-1];
+  const currentThresh = LEVEL_THRESHOLDS[level-1] || 0;
+  const nextThresh = LEVEL_THRESHOLDS[level] || LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length-1] + 200;
+  const xpInLevel = xp - currentThresh;
+  const xpNeeded = nextThresh - currentThresh;
+  const xpPct = Math.min(100, Math.round((xpInLevel / xpNeeded) * 100));
+  document.getElementById('xpBar').style.width = xpPct + '%';
+  document.getElementById('xpText').textContent = `${xp} / ${nextThresh} XP`;
+
+  // Day number
+  document.getElementById('currentDayNum').textContent = today;
+
+  // Rest day
+  document.getElementById('restDayBanner').style.display = rest ? 'block' : 'none';
+
+  // Checklist
+  const checklist = document.getElementById('dailyChecklist');
+  const items = [
+    {key:'workout',title:'Workout Completed',desc:rest?'Rest day — skip if needed':'Complete today\'s exercises',icon:'💪'},
+    {key:'diet',title:'Diet Compliance',desc:'3 meals + 2 snacks, min 2 eggs',icon:'🥗'},
+    {key:'sleep',title:'Sufficient Sleep',desc:'7-8 hours of quality sleep',icon:'😴'}
+  ];
+  checklist.innerHTML = items.map(it => {
+    const checked = dayData[it.key];
+    return `<div class="check-item ${checked?'checked':''}" onclick="toggleCheck(${today},'${it.key}')">
+      <div class="check-box">${checked?'✔':''}</div>
+      <div class="check-label">
+        <div class="title">${it.icon} ${it.title}</div>
+        <div class="desc">${it.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Water buttons
+  const waterBtns = document.getElementById('waterBtns');
+  const waterLevels = [0, 0.5, 1, 1.5, 2, 2.5, 3];
+  waterBtns.innerHTML = waterLevels.map(w =>
+    `<button class="water-btn ${dayData.water===w?'active':''}" onclick="setWater(${today},${w})">${w}L</button>`
+  ).join('');
+  document.getElementById('waterVal').textContent = (dayData.water || 0) + 'L';
+
+  // Badges
+  const badgeGrid = document.getElementById('badgeGrid');
+  badgeGrid.innerHTML = BADGES.map(b => {
+    const earned = streak >= b.req || getMaxStreak() >= b.req;
+    return `<div class="badge-card ${earned?'earned':'locked'}">
+      <div class="badge-emoji">${b.emoji}</div>
+      <div class="badge-name">${b.name}</div>
+      <div class="badge-req">${earned?'✔ Unlocked':b.req+' day streak'}</div>
+    </div>`;
+  }).join('');
+}
+
+function getMaxStreak() {
+  let max = 0, cur = 0;
+  for (let d = 1; d <= TOTAL_DAYS; d++) {
+    const dd = DATA.days[d];
+    if (dd && calcDayScore(dd) > 0) { cur++; max = Math.max(max, cur); }
+    else cur = 0;
+  }
+  return max;
+}
+
+function toggleCheck(day, key) {
+  const dd = getDayData(day);
+  dd[key] = !dd[key];
+  saveData(DATA);
+  renderDashboard();
+}
+
+function setWater(day, amount) {
+  const dd = getDayData(day);
+  dd.water = amount;
+  saveData(DATA);
+  renderDashboard();
+}
+
+// ===== RENDER: WORKOUT =====
+function renderWorkout() {
+  const today = getCurrentDay();
+  document.getElementById('workoutDayNum').textContent = today;
+
+  const phasesEl = document.getElementById('workoutPhases');
+  phasesEl.innerHTML = PHASES.map(p => {
+    const isCurrent = today >= p.range[0] && today <= p.range[1];
+    const isPast = today > p.range[1];
+    return `<div class="phase-card ${isCurrent?'current':''}">
+      <div class="phase-header">
+        <div class="phase-name">${p.name}</div>
+        <div class="phase-badge">${isCurrent?'⚡ CURRENT':isPast?'✔ DONE':p.days}</div>
+      </div>
+      <div class="exercise-list">
+        ${p.exercises.map(e => `<div class="exercise-item">
+          <span class="exercise-name">${e.icon} ${e.name}</span>
+          <span class="exercise-detail">${e.detail}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Today's workout detail
+  const todayEl = document.getElementById('todayWorkout');
+  const rest = isRestDay(today, DATA);
+  if (rest) {
+    todayEl.innerHTML = `<div class="rest-banner">
+      <div class="icon">🧘</div>
+      <h3>Rest Day</h3>
+      <p>Focus on stretching, hydration, and recovery. Your muscles grow during rest!</p>
+    </div>`;
+    return;
+  }
+  const phase = PHASES.find(p => today >= p.range[0] && today <= p.range[1]) || PHASES[0];
+  todayEl.innerHTML = `
+    <p style="color:var(--text2);margin-bottom:16px;font-size:0.88rem">${phase.name} — keep pushing!</p>
+    <div class="exercise-list">
+      ${phase.exercises.map(e => `<div class="exercise-item">
+        <span class="exercise-name">${e.icon} ${e.name}</span>
+        <span class="exercise-detail">${e.detail}</span>
+      </div>`).join('')}
+    </div>
+    <div style="margin-top:16px;padding:14px;border-radius:var(--radius-sm);background:var(--surface2);font-size:0.85rem">
+      💡 <strong>Tip:</strong> Rest 60–90 seconds between sets. Focus on form over speed.
+    </div>
+  `;
+}
+
+// ===== RENDER: DIET =====
+function renderDiet() {
+  const today = getCurrentDay();
+  const dd = getDayData(today);
+
+  // Food grid
+  document.getElementById('foodGrid').innerHTML = FOODS.map(f =>
+    `<div class="food-item">
+      <div class="food-emoji">${f.emoji}</div>
+      <div class="food-name">${f.name}</div>
+      <div class="food-protein">${f.protein}</div>
+    </div>`
+  ).join('');
+
+  // Rules
+  document.getElementById('dietRules').innerHTML = [
+    {icon:'🍽️',text:'3 main meals per day (breakfast, lunch, dinner)'},
+    {icon:'🥨',text:'2 snacks per day (mid-morning & afternoon)'},
+    {icon:'🥚',text:'Minimum 2 eggs per day for protein'},
+    {icon:'💧',text:'Drink 2–3 liters of water daily'},
+    {icon:'🥛',text:'1 glass of milk daily for calcium & protein'},
+    {icon:'🍌',text:'1–2 bananas for potassium & energy'}
+  ].map(r => `<div class="rule-item"><span class="rule-icon">${r.icon}</span>${r.text}</div>`).join('');
+
+  // Restrictions
+  document.getElementById('dietRestrictions').innerHTML = [
+    {icon:'🚫',text:'No skipping meals — maintain consistent eating schedule'},
+    {icon:'🍟',text:'Avoid excessive junk food — limit to 1 cheat per week max'},
+    {icon:'💧',text:'Low water intake reduces your daily score'},
+    {icon:'🍬',text:'Minimize sugary drinks — water and milk preferred'}
+  ].map(r => `<div class="rule-item"><span class="rule-icon">${r.icon}</span>${r.text}</div>`).join('');
+
+  // Diet score
+  const waterPct = Math.min(((dd.water || 0) / WATER_TARGET) * 100, 100);
+  const dietScore = dd.diet ? Math.round((50 + waterPct / 2)) : Math.round(waterPct / 4);
+  document.getElementById('dietScoreSection').innerHTML = `
+    <div style="text-align:center;padding:20px">
+      <div style="font-size:3rem;font-weight:900;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${dietScore}%</div>
+      <div style="color:var(--text2);margin-top:6px;font-size:0.88rem">Diet Compliance Score for Day ${today}</div>
+      <div class="progress-wrap" style="margin-top:14px">
+        <div class="progress-bar" style="width:${dietScore}%;background:linear-gradient(90deg,var(--green),var(--cyan))"></div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:20px;justify-content:center;flex-wrap:wrap">
+        <div style="font-size:0.82rem"><span style="color:${dd.diet?'var(--green)':'var(--red)'}">●</span> Meals: ${dd.diet?'Compliant':'Incomplete'}</div>
+        <div style="font-size:0.82rem"><span style="color:${(dd.water||0)>=2?'var(--green)':'var(--red)'}">●</span> Water: ${dd.water||0}L / ${WATER_TARGET}L</div>
+      </div>
+      <div style="margin-top:14px;font-size:0.82rem;color:var(--text2)">
+        Est. protein: ~${dd.diet ? '60-80' : '0'}g ${dd.diet ? '(2 eggs + chicken/tempeh + milk)' : '— complete your meals!'}
+      </div>
+    </div>
+  `;
+}
+
+// ===== RENDER: TRACKER =====
+function renderTracker() {
+  const today = getCurrentDay();
+  const table = document.getElementById('trackerTable');
+  let html = `<thead><tr>
+    <th>Day</th><th>Workout</th><th>Diet</th><th>Sleep</th><th>Water</th><th>Score</th>
+  </tr></thead><tbody>`;
+
+  for (let d = 1; d <= TOTAL_DAYS; d++) {
+    const dd = getDayData(d);
+    const score = calcDayScore(dd);
+    const isToday = d === today;
+    html += `<tr class="${isToday?'today-row':''}">
+      <td class="day-cell">${d}</td>
+      <td class="toggle-cell ${dd.workout?'on':'off'}" onclick="toggleTracker(${d},'workout')">${dd.workout?'✔':'✖'}</td>
+      <td class="toggle-cell ${dd.diet?'on':'off'}" onclick="toggleTracker(${d},'diet')">${dd.diet?'✔':'✖'}</td>
+      <td class="toggle-cell ${dd.sleep?'on':'off'}" onclick="toggleTracker(${d},'sleep')">${dd.sleep?'✔':'✖'}</td>
+      <td class="toggle-cell ${(dd.water||0)>=2?'on':'off'}" onclick="cycleWaterTracker(${d})">${(dd.water||0)>=2?'✔':'✖'}</td>
+      <td class="score-cell" style="color:${score>=75?'var(--green)':score>=50?'var(--orange)':'var(--red)'}">${score}%</td>
+    </tr>`;
+  }
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+function toggleTracker(day, key) {
+  const dd = getDayData(day);
+  dd[key] = !dd[key];
+  saveData(DATA);
+  renderTracker();
+}
+
+function cycleWaterTracker(day) {
+  const dd = getDayData(day);
+  const cur = dd.water || 0;
+  dd.water = cur >= 2 ? 0 : 2.5;
+  saveData(DATA);
+  renderTracker();
+}
+
+// ===== RENDER: ANALYTICS =====
+let selectedWeek = 1;
+
+function renderAnalytics() {
+  const today = getCurrentDay();
+  const totalWeeks = Math.ceil(TOTAL_DAYS / 7);
+
+  // Week selector
+  const sel = document.getElementById('weekSelector');
+  sel.innerHTML = '';
+  for (let w = 1; w <= totalWeeks; w++) {
+    const start = (w-1)*7+1, end = Math.min(w*7, TOTAL_DAYS);
+    const btn = document.createElement('button');
+    btn.className = 'week-btn' + (w===selectedWeek?' active':'');
+    btn.textContent = `Week ${w} (Day ${start}–${end})`;
+    btn.onclick = () => { selectedWeek = w; renderAnalytics(); };
+    sel.appendChild(btn);
+  }
+
+  // Weekly bars
+  const start = (selectedWeek-1)*7+1;
+  const end = Math.min(selectedWeek*7, TOTAL_DAYS);
+  let workoutCount=0, dietCount=0, sleepCount=0, waterCount=0, totalDays=0;
+  for (let d = start; d <= end; d++) {
+    const dd = DATA.days[d];
+    totalDays++;
+    if (dd) {
+      if (dd.workout) workoutCount++;
+      if (dd.diet) dietCount++;
+      if (dd.sleep) sleepCount++;
+      if ((dd.water||0) >= 2) waterCount++;
+    }
+  }
+  const wp = totalDays?Math.round(workoutCount/totalDays*100):0;
+  const dp = totalDays?Math.round(dietCount/totalDays*100):0;
+  const sp = totalDays?Math.round(sleepCount/totalDays*100):0;
+  const wtp = totalDays?Math.round(waterCount/totalDays*100):0;
+  const overall = Math.round((wp+dp+sp+wtp)/4);
+
+  document.getElementById('weeklyBars').innerHTML = [
+    {label:'Workout',pct:wp,cls:'fill-workout'},
+    {label:'Diet',pct:dp,cls:'fill-diet'},
+    {label:'Sleep',pct:sp,cls:'fill-sleep'},
+    {label:'Water',pct:wtp,cls:'fill-water'},
+    {label:'Overall',pct:overall,cls:'fill-overall'}
+  ].map(b => `<div class="analytics-bar">
+    <div class="analytics-label">${b.label}</div>
+    <div class="analytics-track">
+      <div class="analytics-fill ${b.cls}" style="width:${b.pct}%">${b.pct}%</div>
+    </div>
+  </div>`).join('');
+
+  // Overall stats
+  let totalScore=0, daysCounted=0;
+  for (let d=1;d<=today;d++) {
+    const dd = DATA.days[d];
+    if (dd) { totalScore += calcDayScore(dd); daysCounted++; }
+  }
+  const avgScore = daysCounted ? Math.round(totalScore/daysCounted) : 0;
+  const completedDays = Object.keys(DATA.days).filter(d => calcDayScore(DATA.days[d]) > 0).length;
+
+  document.getElementById('overallStats').innerHTML = `
+    <div class="grid-3" style="margin-bottom:16px">
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value">${completedDays}</div>
+        <div class="stat-label">Active Days</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value">${avgScore}%</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-value">${getMaxStreak()}</div>
+        <div class="stat-label">Best Streak</div>
+      </div>
+    </div>
+    <div style="text-align:center;padding:10px;color:var(--text2);font-size:0.85rem">
+      ${avgScore >= 80 ? '🌟 Outstanding performance! Keep it up!' :
+        avgScore >= 60 ? '💪 Good progress! Push for consistency.' :
+        avgScore >= 40 ? '🔄 Room for improvement. Focus on daily habits.' :
+        '🚀 Just getting started — every day counts!'}
+    </div>
+  `;
+}
+
+// ===== RESET =====
+function resetAll() {
+  if (confirm('⚠️ This will delete ALL your fitness data. Are you sure?')) {
+    if (confirm('This action cannot be undone. Confirm reset?')) {
+      localStorage.removeItem(STORAGE_KEY);
+      DATA = getDefaultData();
+      saveData(DATA);
+      showSection('dashboard');
+    }
+  }
+}
+
+// ===== INIT =====
+function init() {
+  applyTheme();
+  saveData(DATA);
+  renderDashboard();
+}
+
+init();
+</script>
+</body>
+</html>
